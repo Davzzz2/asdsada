@@ -1,109 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <title>Slot Assistant</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Montserrat', Arial, sans-serif;
-      text-align: center;
-      margin: 0; padding: 0;
-      overflow-x: hidden; overflow-y: auto;
-      background: linear-gradient(135deg, hsl(220, 100%, 1%) 0%, hsl(220, 70%, 12%) 50%, hsl(220, 100%, 1%) 100%);
-      background-attachment: fixed; min-height: 100vh; color: white; opacity: 0;
-      animation: pageTransitionIn 0.5s ease-out forwards;
+    *{box-sizing:border-box}
+    body{
+      font-family:'Montserrat',Arial,sans-serif;text-align:center;margin:0;padding:0;overflow-x:hidden;overflow-y:auto;
+      background:linear-gradient(135deg,hsl(220,100%,1%) 0%,hsl(220,70%,12%) 50%,hsl(220,100%,1%) 100%);
+      background-attachment:fixed;min-height:100vh;color:white;opacity:0;animation:pageTransitionIn .5s ease-out forwards;
     }
-    @keyframes pageTransitionIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
-    @keyframes pageTransitionOut { from {opacity:1; transform: translateY(0);} to {opacity:0; transform: translateY(-20px);} }
-    body::before {
-      content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background:
-        radial-gradient(circle at 20% 20%, hsla(220,73%,63%,0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, hsla(220,73%,63%,0.1) 0%, transparent 50%);
-      pointer-events: none; z-index: 0; background-attachment: fixed;
+    @keyframes pageTransitionIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pageTransitionOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-20px)}}
+    body::before{
+      content:'';position:fixed;inset:0;background:
+        radial-gradient(circle at 20% 20%,hsla(220,73%,63%,.1) 0%,transparent 50%),
+        radial-gradient(circle at 80% 80%,hsla(220,73%,63%,.1) 0%,transparent 50%);
+      pointer-events:none;z-index:0;background-attachment:fixed;
     }
-    body::after { display: none; }
-
-    #backButton { position: fixed; top: 20px; left: 20px; background-color: transparent; cursor: pointer; border: none; width: 56px; height: 56px; margin: 0; padding: 0; overflow: hidden; outline: none; z-index: 1001; -webkit-tap-highlight-color: transparent; box-shadow: none; }
-    #backButton:focus { outline: none; box-shadow: none; }
-    #backButton::-moz-focus-inner { border: 0; }
-
-    .button { position: relative; background: transparent; cursor: pointer; border: none; width: 56px; height: 56px; padding: 0; margin: 0; overflow: hidden; outline: none; -webkit-tap-highlight-color: transparent; box-shadow: none; }
-    .button:focus { outline: none; box-shadow: none; }
-    .button::-moz-focus-inner { border: 0; }
-    .button:before, .button:after { content: ""; position: absolute; border-radius: 50%; inset: 7px; box-shadow: none; }
-    .button:before { border: 4px solid rgba(240,238,239,0.8); transition: opacity .4s cubic-bezier(.77,0,.175,1) 80ms, transform .5s cubic-bezier(.455,.03,.515,.955) 80ms; }
-    .button:after { border: 4px solid rgba(150,218,240,0.8); transform: scale(1.3); transition: opacity .4s cubic-bezier(.165,.84,.44,1), transform .5s cubic-bezier(.25,.46,.45,.94); opacity: 0; }
-    .button:hover:before, .button:focus:before { opacity: 0; transform: scale(.7); }
-    .button:hover:after, .button:focus:after { opacity: 1; transform: scale(1); }
-    .button-box { display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center; }
-    .button-elem { display: flex; width: 20px; height: 20px; transform: rotate(180deg); fill: #f0eeef; }
-    .button:hover .button-box, .button:focus .button-box { transition: .4s; transform: translateX(-56px); }
-
-    h1 { margin-top: 20px; font-size: 2.5em; letter-spacing: 1px; color: #fff; }
-
-    .controls-container { position: relative; z-index: 1000; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 15px; margin: 20px 0; }
-
-    .dropdown { position: relative; display: inline-block; margin: 0; z-index: 1000; }
-    .dropbtn { background: rgba(44,62,80,.8); color: white; padding: 10px 20px; border: 2px solid white; border-radius: 5px; font-size: 18px; cursor: pointer; box-shadow: 0 0 5px white; }
-    .dropdown-content { display: none; position: absolute; background: rgba(44,62,80,.8); min-width: 200px; box-shadow: 0 0 20px white; z-index: 1001; border-radius: 5px; padding: 10px; text-align: left; border: 2px solid white; }
-    .dropdown-content label { display: block; color: #000; font-size: 16px; margin: 5px 0; cursor: pointer; }
-    .dropdown-content input[type="checkbox"] { margin-right: 5px; transform: scale(1.2); vertical-align: middle; }
-
-    button { position: relative; z-index: 5; border: 2px solid white; border-radius: 5px; padding: 10px 20px; font-size: 18px; cursor: pointer; transition: all .3s; background: rgba(44,62,80,.8); color: white; box-shadow: 0 0 5px white; }
-    button:hover { background: white; color: rgba(44,62,80,.8); transform: translateY(-2px); }
-    #randomButton { margin: 0; }
-
-    .modal-content .play-btn, .modal-content .cancel-btn, .modal-content .task-btn { background: rgba(44,62,80,.8); color: white; border: 2px solid white; }
-    .modal-content .play-btn:hover, .modal-content .cancel-btn:hover, .modal-content .task-btn:hover { background: white; color: rgba(44,62,80,.8); }
-
-    #taskDisplay { position: relative; z-index: 6; font-size: 20px; font-weight: bold; margin-top: 10px; color: white; text-shadow: 0 0 5px white; }
-
-    #sliderContainer { position: relative; width: 100vw; height: 350px; overflow: hidden; margin: 20px auto; background: rgba(44,62,80,.8); border: 2px solid white; box-shadow: 0 0 20px white; z-index: 1; }
-    #centerLine { position: absolute; width: 4px; height: 100%; background: white; left: 50%; transform: translateX(-50%); top: 0; z-index: 8; }
-    #slider { display: flex; align-items: center; gap: 10px; padding: 10px; margin: 0; white-space: nowrap; transform: translateX(0); }
-
-    .slot { width: 250px; flex-shrink: 0; transition: transform .3s ease-in-out; cursor: pointer; border: 2px solid white; border-radius: 5px; background: rgba(44,62,80,.8); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px white; }
-    .slot img { width: 100%; height: 100%; border-radius: 5px; object-fit: cover; display: block; transition: transform .3s ease-in-out, box-shadow .3s ease-in-out; image-rendering: auto; }
-    .slot:hover img { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,.1); }
-    .highlight { transform: scale(1.1); border-color: #222; transition: transform .3s ease-in-out; }
-
-    #modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,.6); justify-content: center; align-items: center; z-index: 2000; opacity: 0; transition: opacity .3s ease-in-out; }
-    #modal.show { opacity: 1; }
-    .modal-content { background: rgba(44,62,80,.8); padding: 20px; border-radius: 8px; text-align: center; color: white; width: 600px; max-width: 90%; border: 2px solid white; box-shadow: 0 0 20px white; transform: scale(.9); transition: transform .3s ease-in-out; }
-    #modal.show .modal-content { transform: scale(1); }
-    .modal-content img { max-width: 100%; height: auto; border-radius: 5px; margin-bottom: 10px; border: 2px solid white; }
-
-    #domainSelector {
-      position: relative; z-index: 1002; padding: 5px 17px; font-size: 16px; border-radius: 5px; border: 2px solid white;
-      background: rgba(44,62,80,.8); color: white; appearance: none; -webkit-appearance: none; -moz-appearance: none;
-      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D'10'%20height%3D'10'%20viewBox%3D'0%200%2010%2010'%20xmlns%3D'http://www.w3.org/2000/svg'%3E%3Cpolygon%20points%3D'0,0%2010,0%205,10'%20fill%3D'%23fff'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; position: relative; top: -15px;
+    body::after{display:none}
+    #backButton{position:fixed;top:20px;left:20px;background-color:transparent;cursor:pointer;border:none;width:56px;height:56px;margin:0;padding:0;overflow:hidden;outline:none;z-index:1001;-webkit-tap-highlight-color:transparent;box-shadow:none}
+    #backButton:focus{outline:none;box-shadow:none}
+    #backButton::-moz-focus-inner{border:0}
+    .button{position:relative;background:transparent;cursor:pointer;border:none;width:56px;height:56px;padding:0;margin:0;overflow:hidden;outline:none;-webkit-tap-highlight-color:transparent;box-shadow:none}
+    .button:focus{outline:none;box-shadow:none}
+    .button::-moz-focus-inner{border:0}
+    .button:before,.button:after{content:"";position:absolute;border-radius:50%;inset:7px;box-shadow:none}
+    .button:before{border:4px solid rgba(240,238,239,.8);transition:opacity .4s cubic-bezier(.77,0,.175,1) 80ms,transform .5s cubic-bezier(.455,.03,.515,.955) 80ms}
+    .button:after{border:4px solid rgba(150,218,240,.8);transform:scale(1.3);transition:opacity .4s cubic-bezier(.165,.84,.44,1),transform .5s cubic-bezier(.25,.46,.45,.94);opacity:0}
+    .button:hover:before,.button:focus:before{opacity:0;transform:scale(.7)}
+    .button:hover:after,.button:focus:after{opacity:1;transform:scale(1)}
+    .button-box{display:flex;position:absolute;top:0;left:0;width:100%;height:100%;align-items:center;justify-content:center}
+    .button-elem{display:flex;width:20px;height:20px;transform:rotate(180deg);fill:#f0eeef}
+    .button:hover .button-box,.button:focus .button-box{transition:.4s;transform:translateX(-56px)}
+    h1{margin-top:20px;font-size:2.5em;letter-spacing:1px;color:#fff}
+    .controls-container{position:relative;z-index:1000;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:15px;margin:20px 0}
+    .dropdown{position:relative;display:inline-block;margin:0;z-index:1000}
+    .dropbtn{background:rgba(44,62,80,.8);color:white;padding:10px 20px;border:2px solid white;border-radius:5px;font-size:18px;cursor:pointer;box-shadow:0 0 5px white}
+    .dropdown-content{display:none;position:absolute;background:rgba(44,62,80,.8);min-width:200px;box-shadow:0 0 20px white;z-index:1001;border-radius:5px;padding:10px;text-align:left;border:2px solid white}
+    .dropdown-content label{display:block;color:#000;font-size:16px;margin:5px 0;cursor:pointer}
+    .dropdown-content input[type="checkbox"]{margin-right:5px;transform:scale(1.2);vertical-align:middle}
+    button{position:relative;z-index:5;border:2px solid white;border-radius:5px;padding:10px 20px;font-size:18px;cursor:pointer;transition:all .3s;background:rgba(44,62,80,.8);color:white;box-shadow:0 0 5px white}
+    button:hover{background:white;color:rgba(44,62,80,.8);transform:translateY(-2px)}
+    #randomButton{margin:0}
+    .modal-content .play-btn,.modal-content .cancel-btn,.modal-content .task-btn{background:rgba(44,62,80,.8);color:white;border:2px solid white}
+    .modal-content .play-btn:hover,.modal-content .cancel-btn:hover,.modal-content .task-btn:hover{background:white;color:rgba(44,62,80,.8)}
+    #taskDisplay{position:relative;z-index:6;font-size:20px;font-weight:bold;margin-top:10px;color:white;text-shadow:0 0 5px white}
+    #sliderContainer{position:relative;width:100vw;height:350px;overflow:hidden;margin:20px auto;background:rgba(44,62,80,.8);border:2px solid white;box-shadow:0 0 20px white;z-index:1}
+    #centerLine{position:absolute;width:4px;height:100%;background:white;left:50%;transform:translateX(-50%);top:0;z-index:8}
+    #slider{display:flex;align-items:center;gap:10px;padding:10px;margin:0;white-space:nowrap;transform:translateX(0)}
+    .slot{width:250px;flex-shrink:0;transition:transform .3s ease-in-out;cursor:pointer;border:2px solid white;border-radius:5px;background:rgba(44,62,80,.8);color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px white}
+    .slot img{width:100%;height:100%;border-radius:5px;object-fit:cover;display:block;transition:transform .3s ease-in-out,box-shadow .3s ease-in-out;image-rendering:auto}
+    .slot:hover img{transform:scale(1.05);box-shadow:0 4px 8px rgba(0,0,0,.1)}
+    .highlight{transform:scale(1.1);border-color:#222;transition:transform .3s ease-in-out}
+    #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);justify-content:center;align-items:center;z-index:2000;opacity:0;transition:opacity .3s ease-in-out}
+    #modal.show{opacity:1}
+    .modal-content{background:rgba(44,62,80,.8);padding:20px;border-radius:8px;text-align:center;color:white;width:600px;max-width:90%;border:2px solid white;box-shadow:0 0 20px white;transform:scale(.9);transition:transform .3s ease-in-out}
+    #modal.show .modal-content{transform:scale(1)}
+    .modal-content img{max-width:100%;height:auto;border-radius:5px;margin-bottom:10px;border:2px solid white}
+    #domainSelector{
+      position:relative;z-index:1002;padding:5px 17px;font-size:16px;border-radius:5px;border:2px solid white;background:rgba(44,62,80,.8);color:white;
+      appearance:none;-webkit-appearance:none;-moz-appearance:none;
+      background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D'10'%20height%3D'10'%20viewBox%3D'0%200%2010%2010'%20xmlns%3D'http://www.w3.org/2000/svg'%3E%3Cpolygon%20points%3D'0,0%2010,0%205,10'%20fill%3D'%23fff'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 10px center;cursor:pointer;top:-15px
     }
-
-    @media (max-width: 1200px) { #sliderContainer { width: 90vw; } }
-    @media (max-width: 992px) { h1 { font-size: 2em; } .slot { width: 200px; } .modal-content { width: 80%; } }
-    @media (max-width: 768px) {
-      h1 { font-size: 1.8em; } #sliderContainer { height: 300px; } .slot { width: 180px; }
-      .dropdown-content { min-width: 180px; } .modal-content { padding: 15px; }
-      #backButton { top: 10px; left: 10px; width: 45px; height: 45px; } .button-box { transform: scale(0.8); }
+    @media (max-width:1200px){#sliderContainer{width:90vw}}
+    @media (max-width:992px){h1{font-size:2em}.slot{width:200px}.modal-content{width:80%}}
+    @media (max-width:768px){
+      h1{font-size:1.8em}#sliderContainer{height:300px}.slot{width:180px}.dropdown-content{min-width:180px}
+      .modal-content{padding:15px}#backButton{top:10px;left:10px;width:45px;height:45px}.button-box{transform:scale(.8)}
     }
-    @media (max-width: 576px) {
-      body { padding-bottom: 30px; } h1 { font-size: 1.5em; margin-top: 65px; }
-      #backButton { width: 40px; height: 40px; }
-      .dropbtn, #randomButton { font-size: 16px; padding: 8px 16px; }
-      #sliderContainer { height: 220px; margin: 15px auto; } .slot { width: 140px; }
-      .modal-content { padding: 10px; width: 85%; max-height: 80vh; overflow-y: auto; }
-      .modal-content h2 { font-size: 18px; }
-      .modal-content .play-btn, .modal-content .cancel-btn, .modal-content .task-btn { font-size: 14px; padding: 8px 16px; }
-      #taskDisplay { font-size: 16px; }
-      #domainSelector { font-size: 14px; padding: 4px 15px; }
-      .dropdown-content { max-height: 60vh; overflow-y: auto; }
+    @media (max-width:576px){
+      body{padding-bottom:30px}h1{font-size:1.5em;margin-top:65px}#backButton{width:40px;height:40px}
+      .dropbtn,#randomButton{font-size:16px;padding:8px 16px}#sliderContainer{height:220px;margin:15px auto}
+      .slot{width:140px}.modal-content{padding:10px;width:85%;max-height:80vh;overflow-y:auto}.modal-content h2{font-size:18px}
+      .modal-content .play-btn,.modal-content .cancel-btn,.modal-content .task-btn{font-size:14px;padding:8px 16px}#taskDisplay{font-size:16px}
+      #domainSelector{font-size:14px;padding:4px 15px}.dropdown-content{max-height:60vh;overflow-y:auto}
     }
-    @media (max-width: 400px) { h1 { font-size: 1.3em; } .dropdown-content { min-width: 150px; } .slot { width: 120px; } #backButton { width: 40px; height: 40px; } }
+    @media (max-width:400px){h1{font-size:1.3em}.dropdown-content{min-width:150px}.slot{width:120px}#backButton{width:40px;height:40px}}
   </style>
 </head>
 <body>
@@ -120,7 +96,6 @@
   <h1>Slot Assistant</h1>
 
   <div class="controls-container">
-    <!-- Dropdown with Provider Checkboxes -->
     <div class="dropdown">
       <button class="dropbtn" id="providerDropdownBtn">Select Providers</button>
       <div class="dropdown-content" id="providerDropdownContent">
@@ -155,14 +130,12 @@
     <div id="slider"></div>
   </div>
 
-  <!-- Modal Popout -->
   <div id="modal">
     <div class="modal-content">
       <img id="modalSlotImage" src="" alt="Slot Image">
       <h2 id="modalSlotName"></h2>
-      <!-- Domain Selector Dropdown -->
       <select id="domainSelector"></select>
-      <br>
+      <br/>
       <div class="modal-buttons">
         <button class="play-btn" id="modalPlayButton">Play Now</button>
         <button class="cancel-btn" id="modalCancelButton">Cancel</button>
@@ -173,50 +146,32 @@
   </div>
 
   <script>
-    /* ====== ORIGINAL GLOBALS (kept) ====== */
-    let pragmaticSlots = [], hacksawSlots = [], nolimitSlots = [], massiveSlots = [], twistSlots = [],
-        pushSlots = [], relaxSlots = [], playngoSlots = [], titanSlots = [], avataruxSlots = [],
-        backseatSlots = [], octoplaySlots = [], peterSlots = [], elkSlots = [], thunderSlots = [],
-        popiSlots = [], bgamingSlots = [], printSlots = [], bullsharkSlots = [], netentSlots = [], slots = [];
+    /* ====== Globals (kept) ====== */
+    let pragmaticSlots=[],hacksawSlots=[],nolimitSlots=[],massiveSlots=[],twistSlots=[],
+        pushSlots=[],relaxSlots=[],playngoSlots=[],titanSlots=[],avataruxSlots=[],
+        backseatSlots=[],octoplaySlots=[],peterSlots=[],elkSlots=[],thunderSlots=[],
+        popiSlots=[],bgamingSlots=[],printSlots=[],bullsharkSlots=[],netentSlots=[],slots=[];
+    let selectedSlot=null,currentTranslate=0;const speed=2000;let slotIdCounter=0;
 
-    let selectedSlot = null, currentTranslate = 0; const speed = 2000; let slotIdCounter = 0;
+    const domains=["stake.com","stake.ac","stake.games","stake.bet","stake.pet","stake1001.com","stake1002.com","stake1003.com","stake1021.com","stake1022.com","stake.mba","stake.jp","stake.bz","staketr.com","stake.ceo","stake.krd"];
+    const domainSelector=document.getElementById('domainSelector');
+    const defaultOption=document.createElement('option');defaultOption.value="";defaultOption.textContent="Select Domain";defaultOption.selected=true;domainSelector.appendChild(defaultOption);
+    domains.forEach(d=>{const o=document.createElement('option');o.value=o.textContent=d;domainSelector.appendChild(o);});
+    let selectedDomain="";domainSelector.addEventListener("change",function(){if(this.value!==""){selectedDomain=this.value;this.disabled=true;this.value="";}});
 
-    const domains = ["stake.com","stake.ac","stake.games","stake.bet","stake.pet","stake1001.com","stake1002.com","stake1003.com","stake1021.com","stake1022.com","stake.mba","stake.jp","stake.bz","staketr.com","stake.ceo","stake.krd"];
-
-    const domainSelector = document.getElementById('domainSelector');
-    const defaultOption = document.createElement('option'); defaultOption.value = ""; defaultOption.textContent = "Select Domain"; defaultOption.selected = true; domainSelector.appendChild(defaultOption);
-    domains.forEach(domain => { const option = document.createElement('option'); option.value = domain; option.textContent = domain; domainSelector.appendChild(option); });
-
-    let selectedDomain = "";
-    domainSelector.addEventListener("change", function() {
-      if (this.value !== "") { selectedDomain = this.value; this.disabled = true; this.value = ""; }
+    document.getElementById("providerDropdownBtn").addEventListener("click",()=>{const c=document.getElementById("providerDropdownContent");c.style.display="block";setTimeout(()=>c.classList.add("show"),10);});
+    document.addEventListener("click",(e)=>{const dd=document.querySelector(".dropdown");const dc=document.getElementById("providerDropdownContent");if(!dd.contains(e.target)){dc.classList.remove("show");setTimeout(()=>dc.style.display="none",300);}});
+    function updateDropdownButtonText(){document.getElementById("providerDropdownBtn").textContent="Select Providers";}
+    ["pragmaticCheckbox","hacksawCheckbox","nolimitCheckbox","massiveCheckbox","twistCheckbox","pushCheckbox","relaxCheckbox","playngoCheckbox","titanCheckbox","avataruxCheckbox","backseatCheckbox","octoplayCheckbox","peterCheckbox","elkCheckbox","thunderCheckbox","popiCheckbox","bgamingCheckbox","printCheckbox","bullsharkCheckbox","netentCheckbox"].forEach(id=>{
+      document.getElementById(id).addEventListener("change",()=>{updateDropdownButtonText();loadSlots();});
     });
-
-    document.getElementById("providerDropdownBtn").addEventListener("click", () => {
-      const content = document.getElementById("providerDropdownContent"); content.style.display = "block";
-      setTimeout(() => { content.classList.add("show"); }, 10);
-    });
-    document.addEventListener("click", (e) => {
-      const dropdown = document.querySelector(".dropdown"); const dropdownContent = document.getElementById("providerDropdownContent");
-      if (!dropdown.contains(e.target)) { dropdownContent.classList.remove("show"); setTimeout(() => { dropdownContent.style.display = "none"; }, 300); }
-    });
-
-    function updateDropdownButtonText(){ document.getElementById("providerDropdownBtn").textContent = "Select Providers"; }
-    const checkboxIds = ["pragmaticCheckbox","hacksawCheckbox","nolimitCheckbox","massiveCheckbox","twistCheckbox","pushCheckbox","relaxCheckbox","playngoCheckbox","titanCheckbox","avataruxCheckbox","backseatCheckbox","octoplayCheckbox","peterCheckbox","elkCheckbox","thunderCheckbox","popiCheckbox","bgamingCheckbox","printCheckbox","bullsharkCheckbox","netentCheckbox"];
-    checkboxIds.forEach(id => { document.getElementById(id).addEventListener("change", () => { updateDropdownButtonText(); loadSlots(); }); });
     updateDropdownButtonText();
 
-    function shuffleArray(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
-    function preloadImages(slots){ const ps=[]; slots.forEach(slot=>{ const img=slot.querySelector('img'); if(img){ ps.push(new Promise(r=>{ if(img.complete) r(); else { img.onload=r; img.onerror=r; } })); }}); return Promise.all(ps); }
-    function updateSliderDisplay(){
-      const slider=document.getElementById('slider'); slider.innerHTML='';
-      const special=["bullshark","massive","titan"]; const allSpecial=slots.length>0&&slots.every(s=>special.includes(s.dataset.provider));
-      const repeat=(slots.length<2||allSpecial)?10:3;
-      for(let i=0;i<repeat;i++){ slots.forEach(slot=>slider.appendChild(i===0?slot:slot.cloneNode(true))); }
-      currentTranslate=0; slider.style.transition='none'; slider.style.transform='translateX(0px)';
-    }
+    function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+    function preloadImages(arr){const ps=[];arr.forEach(slot=>{const img=slot.querySelector('img');if(img){ps.push(new Promise(r=>{if(img.complete)r();else{img.onload=r;img.onerror=r;}}));}});return Promise.all(ps);}
+    function updateSliderDisplay(){const slider=document.getElementById('slider');slider.innerHTML='';const special=["bullshark","massive","titan"];const allSpecial=slots.length>0&&slots.every(s=>special.includes(s.dataset.provider));const repeat=(slots.length<2||allSpecial)?10:3;for(let i=0;i<repeat;i++){slots.forEach(slot=>slider.appendChild(i===0?slot:slot.cloneNode(true)));}currentTranslate=0;slider.style.transition='none';slider.style.transform='translateX(0px)';}
 
-    /* ====== SINGLE-FILE PIPELINE (slots.txt) ====== */
+    /* ====== Single-file loader (slots.txt) with provider inference ====== */
     let __allParsedElements=null;
 
     function normalizeProviderToKey(label){
@@ -245,15 +200,47 @@
       return "unknown";
     }
 
+    function inferProvider(name, link, image){
+      const hay=(name+" "+link+" "+image).toLowerCase();
+      const hits=[
+        ["pragmatic",["pragmatic","pragmaticplay","ppslot"]],
+        ["hacksaw",["hacksaw"]],
+        ["nolimit",["nolimit","nolimitcity","nlc"]],
+        ["massive",["massive"]],
+        ["twist",["twist"]],
+        ["push",["pushgaming","push"]],
+        ["relax",["relaxgaming","relax"]],
+        ["playngo",["playngo","play'n","playn'","play n go","png/","/png/"]],
+        ["titan",["titan"]],
+        ["avatarux",["avatarux","avatar ux"]],
+        ["backseat",["backseat"]],
+        ["octoplay",["octoplay"]],
+        ["peter",["peter&sons","peter & sons","petersons","peter-sons","pns"]],
+        ["elk",["elk","elkstudios"]],
+        ["thunder",["thunderkick","thunder-kick"]],
+        ["popi",["popiplay","popi-play"]],
+        ["bgaming",["bgaming","b-gaming"]],
+        ["print",["printstudios","print-studios","printstudio"]],
+        ["bullshark",["bullshark"]],
+        ["netent",["netent","net-ent"]]
+      ];
+      for(const [key,keys] of hits){
+        if(keys.some(k=>hay.includes(k))) return key;
+      }
+      return "unknown";
+    }
+
     function parseSlotsTextToElements(text){
-      const lines=String(text).split(/\r?\n/).filter(l=>l.trim()!==''); const elems=[];
+      const lines=String(text).split(/\r?\n/).filter(l=>l.trim()!=='');
+      const elems=[]; let counts={};
       for(const line of lines){
-        // Accept 3 or 4 columns; prefer 4th Provider if present
+        // allow 3 or 4 columns
         const m=line.match(/^"([^"]+)","([^"]+)","([^"]+)"(?:,"([^"]*)")?\s*$/);
         if(!m) continue;
         const slotName=m[1].trim(), imageUrl=m[2].trim(), slotLink=m[3].trim();
         const providerLabel=(m[4]||'').trim();
-        const providerKey=normalizeProviderToKey(providerLabel);
+        let providerKey=normalizeProviderToKey(providerLabel);
+        if(providerKey==="unknown"){ providerKey=inferProvider(slotName,slotLink,imageUrl); }
 
         const div=document.createElement('div');
         div.className='slot';
@@ -264,78 +251,79 @@
 
         const img=document.createElement('img'); img.src=imageUrl; img.alt=slotName; div.appendChild(img);
         elems.push(div);
+
+        counts[providerKey]=(counts[providerKey]||0)+1;
       }
+      console.log("[slots] Parsed entries:", elems.length);
+      console.table(counts);
+      if(counts["unknown"]) console.warn(`[slots] ${counts["unknown"]} entries have unknown provider — add a 4th CSV column or use clearer names/links for better inference.`);
       return elems;
     }
 
     async function ensureParsedOnce(){
       if(__allParsedElements) return __allParsedElements;
-      // On GitHub Pages (https), fetch works fine:
-      const res=await fetch('slots.txt', {cache:'no-store'});
+      const res=await fetch('slots.txt',{cache:'no-store'});
       if(!res.ok) throw new Error('Failed to fetch slots.txt: HTTP '+res.status);
       const txt=await res.text();
       __allParsedElements=parseSlotsTextToElements(txt);
       return __allParsedElements;
     }
 
-    // Keep the same signature as before; provider is the key we filter on:
-    function fetchSlots(_legacyUrl, providerKey){
-      return ensureParsedOnce().then(all =>
-        all.filter(el => el.dataset.provider===providerKey).map(el => el.cloneNode(true))
-      );
+    function fetchSlots(_legacy, providerKey){
+      return ensureParsedOnce().then(all => all.filter(el=>el.dataset.provider===providerKey).map(el=>el.cloneNode(true)));
     }
 
     function loadSlots(){
-      const pragmaticChecked = document.getElementById('pragmaticCheckbox').checked;
-      const hacksawChecked   = document.getElementById('hacksawCheckbox').checked;
-      const nolimitChecked   = document.getElementById('nolimitCheckbox').checked;
-      const massiveChecked   = document.getElementById('massiveCheckbox').checked;
-      const twistChecked     = document.getElementById('twistCheckbox').checked;
-      const pushChecked      = document.getElementById('pushCheckbox').checked;
-      const relaxChecked     = document.getElementById('relaxCheckbox').checked;
-      const playngoChecked   = document.getElementById('playngoCheckbox').checked;
-      const titanChecked     = document.getElementById('titanCheckbox').checked;
-      const avataruxChecked  = document.getElementById('avataruxCheckbox').checked;
-      const backseatChecked  = document.getElementById('backseatCheckbox').checked;
-      const octoplayChecked  = document.getElementById('octoplayCheckbox').checked;
-      const peterChecked     = document.getElementById('peterCheckbox').checked;
-      const elkChecked       = document.getElementById('elkCheckbox').checked;
-      const thunderChecked   = document.getElementById('thunderCheckbox').checked;
-      const popiChecked      = document.getElementById('popiCheckbox').checked;
-      const bgamingChecked   = document.getElementById('bgamingCheckbox').checked;
-      const printChecked     = document.getElementById('printCheckbox').checked;
-      const bullsharkChecked = document.getElementById('bullsharkCheckbox').checked;
-      const netentChecked    = document.getElementById('netentCheckbox').checked;
+      const pragmaticChecked=document.getElementById('pragmaticCheckbox').checked;
+      const hacksawChecked=document.getElementById('hacksawCheckbox').checked;
+      const nolimitChecked=document.getElementById('nolimitCheckbox').checked;
+      const massiveChecked=document.getElementById('massiveCheckbox').checked;
+      const twistChecked=document.getElementById('twistCheckbox').checked;
+      const pushChecked=document.getElementById('pushCheckbox').checked;
+      const relaxChecked=document.getElementById('relaxCheckbox').checked;
+      const playngoChecked=document.getElementById('playngoCheckbox').checked;
+      const titanChecked=document.getElementById('titanCheckbox').checked;
+      const avataruxChecked=document.getElementById('avataruxCheckbox').checked;
+      const backseatChecked=document.getElementById('backseatCheckbox').checked;
+      const octoplayChecked=document.getElementById('octoplayCheckbox').checked;
+      const peterChecked=document.getElementById('peterCheckbox').checked;
+      const elkChecked=document.getElementById('elkCheckbox').checked;
+      const thunderChecked=document.getElementById('thunderCheckbox').checked;
+      const popiChecked=document.getElementById('popiCheckbox').checked;
+      const bgamingChecked=document.getElementById('bgamingCheckbox').checked;
+      const printChecked=document.getElementById('printCheckbox').checked;
+      const bullsharkChecked=document.getElementById('bullsharkCheckbox').checked;
+      const netentChecked=document.getElementById('netentCheckbox').checked;
 
-      // reset groups
-      pragmaticSlots=[]; hacksawSlots=[]; nolimitSlots=[]; massiveSlots=[]; twistSlots=[];
-      pushSlots=[]; relaxSlots=[]; playngoSlots=[]; titanSlots=[]; avataruxSlots=[];
-      backseatSlots=[]; octoplaySlots=[]; peterSlots=[]; elkSlots=[]; thunderSlots=[];
-      popiSlots=[]; bgamingSlots=[]; printSlots=[]; bullsharkSlots=[]; netentSlots=[]; slots=[];
+      pragmaticSlots=[];hacksawSlots=[];nolimitSlots=[];massiveSlots=[];twistSlots=[];
+      pushSlots=[];relaxSlots=[];playngoSlots=[];titanSlots=[];avataruxSlots=[];
+      backseatSlots=[];octoplaySlots=[];peterSlots=[];elkSlots=[];thunderSlots=[];
+      popiSlots=[];bgamingSlots=[];printSlots=[];bullsharkSlots=[];netentSlots=[];
+      slots=[];
 
-      const promises=[];
-      if(pragmaticChecked) promises.push(fetchSlots(null,'pragmatic').then(a=>{pragmaticSlots=a;}));
-      if(hacksawChecked)   promises.push(fetchSlots(null,'hacksaw').then(a=>{hacksawSlots=a;}));
-      if(nolimitChecked)   promises.push(fetchSlots(null,'nolimit').then(a=>{nolimitSlots=a;}));
-      if(massiveChecked)   promises.push(fetchSlots(null,'massive').then(a=>{massiveSlots=a;}));
-      if(twistChecked)     promises.push(fetchSlots(null,'twist').then(a=>{twistSlots=a;}));
-      if(pushChecked)      promises.push(fetchSlots(null,'push').then(a=>{pushSlots=a;}));
-      if(relaxChecked)     promises.push(fetchSlots(null,'relax').then(a=>{relaxSlots=a;}));
-      if(playngoChecked)   promises.push(fetchSlots(null,'playngo').then(a=>{playngoSlots=a;}));
-      if(titanChecked)     promises.push(fetchSlots(null,'titan').then(a=>{titanSlots=a;}));
-      if(avataruxChecked)  promises.push(fetchSlots(null,'avatarux').then(a=>{avataruxSlots=a;}));
-      if(backseatChecked)  promises.push(fetchSlots(null,'backseat').then(a=>{backseatSlots=a;}));
-      if(octoplayChecked)  promises.push(fetchSlots(null,'octoplay').then(a=>{octoplaySlots=a;}));
-      if(peterChecked)     promises.push(fetchSlots(null,'peter').then(a=>{peterSlots=a;}));
-      if(elkChecked)       promises.push(fetchSlots(null,'elk').then(a=>{elkSlots=a;}));
-      if(thunderChecked)   promises.push(fetchSlots(null,'thunder').then(a=>{thunderSlots=a;}));
-      if(popiChecked)      promises.push(fetchSlots(null,'popi').then(a=>{popiSlots=a;}));
-      if(bgamingChecked)   promises.push(fetchSlots(null,'bgaming').then(a=>{bgamingSlots=a;}));
-      if(printChecked)     promises.push(fetchSlots(null,'print').then(a=>{printSlots=a;}));
-      if(bullsharkChecked) promises.push(fetchSlots(null,'bullshark').then(a=>{bullsharkSlots=a;}));
-      if(netentChecked)    promises.push(fetchSlots(null,'netent').then(a=>{netentSlots=a;}));
+      const ps=[];
+      if(pragmaticChecked) ps.push(fetchSlots(null,'pragmatic').then(a=>pragmaticSlots=a));
+      if(hacksawChecked)   ps.push(fetchSlots(null,'hacksaw').then(a=>hacksawSlots=a));
+      if(nolimitChecked)   ps.push(fetchSlots(null,'nolimit').then(a=>nolimitSlots=a));
+      if(massiveChecked)   ps.push(fetchSlots(null,'massive').then(a=>massiveSlots=a));
+      if(twistChecked)     ps.push(fetchSlots(null,'twist').then(a=>twistSlots=a));
+      if(pushChecked)      ps.push(fetchSlots(null,'push').then(a=>pushSlots=a));
+      if(relaxChecked)     ps.push(fetchSlots(null,'relax').then(a=>relaxSlots=a));
+      if(playngoChecked)   ps.push(fetchSlots(null,'playngo').then(a=>playngoSlots=a));
+      if(titanChecked)     ps.push(fetchSlots(null,'titan').then(a=>titanSlots=a));
+      if(avataruxChecked)  ps.push(fetchSlots(null,'avatarux').then(a=>avataruxSlots=a));
+      if(backseatChecked)  ps.push(fetchSlots(null,'backseat').then(a=>backseatSlots=a));
+      if(octoplayChecked)  ps.push(fetchSlots(null,'octoplay').then(a=>octoplaySlots=a));
+      if(peterChecked)     ps.push(fetchSlots(null,'peter').then(a=>peterSlots=a));
+      if(elkChecked)       ps.push(fetchSlots(null,'elk').then(a=>elkSlots=a));
+      if(thunderChecked)   ps.push(fetchSlots(null,'thunder').then(a=>thunderSlots=a));
+      if(popiChecked)      ps.push(fetchSlots(null,'popi').then(a=>popiSlots=a));
+      if(bgamingChecked)   ps.push(fetchSlots(null,'bgaming').then(a=>bgamingSlots=a));
+      if(printChecked)     ps.push(fetchSlots(null,'print').then(a=>printSlots=a));
+      if(bullsharkChecked) ps.push(fetchSlots(null,'bullshark').then(a=>bullsharkSlots=a));
+      if(netentChecked)    ps.push(fetchSlots(null,'netent').then(a=>netentSlots=a));
 
-      Promise.all(promises).then(()=>{
+      Promise.all(ps).then(()=>{
         if(pragmaticChecked) slots=slots.concat(pragmaticSlots);
         if(hacksawChecked)   slots=slots.concat(hacksawSlots);
         if(nolimitChecked)   slots=slots.concat(nolimitSlots);
@@ -357,71 +345,69 @@
         if(bullsharkChecked) slots=slots.concat(bullsharkSlots);
         if(netentChecked)    slots=slots.concat(netentSlots);
 
-        if(!slots.length){ alert('Please select at least one provider.'); }
-
+        if(!slots.length){
+          console.warn("[slots] No slots matched the selected providers. Check provider column (4th) or inference keywords.");
+          alert('Please select at least one provider or ensure slots.txt has Provider data.');
+        }
         shuffleArray(slots);
         preloadImages(slots).then(updateSliderDisplay);
       }).catch(err=>console.error("Error loading slots:",err));
     }
 
     function getRandomFromAllowed(allowed, threshold){
-      if(allowed.length<=threshold){ return allowed[Math.floor(Math.random()*allowed.length)]; }
-      return (Math.random()<0.7)? allowed[Math.floor(Math.random()*threshold)]
-                                : allowed[threshold+Math.floor(Math.random()*(allowed.length-threshold))];
+      if(allowed.length<=threshold) return allowed[Math.floor(Math.random()*allowed.length)];
+      return (Math.random()<0.7)? allowed[Math.floor(Math.random()*threshold)] : allowed[threshold+Math.floor(Math.random()*(allowed.length-threshold))];
     }
 
     function getWeightedRandomSlot(){
       const selected=[];
-      function allowedFilter(arr){ return arr.filter(slot=>{ const name=(slot.dataset.name||"").toLowerCase(); return !(name.includes('bacarrat')||name.includes('roulette')||name.includes('blackjack')); }); }
-      if(document.getElementById('pragmaticCheckbox').checked){ const a=allowedFilter(pragmaticSlots); if(a.length) selected.push({provider:"pragmatic",allowed:a,threshold:30}); }
-      if(document.getElementById('hacksawCheckbox').checked)  { const a=allowedFilter(hacksawSlots);   if(a.length) selected.push({provider:"hacksaw",allowed:a,threshold:16}); }
-      if(document.getElementById('nolimitCheckbox').checked)  { const a=allowedFilter(nolimitSlots);   if(a.length) selected.push({provider:"nolimit",allowed:a,threshold:20}); }
-      if(document.getElementById('massiveCheckbox').checked)  { const a=allowedFilter(massiveSlots);   if(a.length) selected.push({provider:"massive",allowed:a,threshold:20}); }
-      if(document.getElementById('twistCheckbox').checked)    { const a=allowedFilter(twistSlots);     if(a.length) selected.push({provider:"twist",allowed:a,threshold:20}); }
-      if(document.getElementById('pushCheckbox').checked)     { const a=allowedFilter(pushSlots);      if(a.length) selected.push({provider:"push",allowed:a,threshold:20}); }
-      if(document.getElementById('relaxCheckbox').checked)    { const a=allowedFilter(relaxSlots);     if(a.length) selected.push({provider:"relax",allowed:a,threshold:20}); }
-      if(document.getElementById('playngoCheckbox').checked)  { const a=allowedFilter(playngoSlots);   if(a.length) selected.push({provider:"playngo",allowed:a,threshold:30}); }
-      if(document.getElementById('titanCheckbox').checked)    { const a=allowedFilter(titanSlots);     if(a.length) selected.push({provider:"titan",allowed:a,threshold:20}); }
-      if(document.getElementById('avataruxCheckbox').checked) { const a=allowedFilter(avataruxSlots);  if(a.length) selected.push({provider:"avatarux",allowed:a,threshold:20}); }
-      if(document.getElementById('backseatCheckbox').checked) { const a=allowedFilter(backseatSlots);  if(a.length) selected.push({provider:"backseat",allowed:a,threshold:20}); }
-      if(document.getElementById('octoplayCheckbox').checked) { const a=allowedFilter(octoplaySlots);  if(a.length) selected.push({provider:"octoplay",allowed:a,threshold:20}); }
-      if(document.getElementById('peterCheckbox').checked)    { const a=allowedFilter(peterSlots);     if(a.length) selected.push({provider:"peter",allowed:a,threshold:20}); }
-      if(document.getElementById('elkCheckbox').checked)      { const a=allowedFilter(elkSlots);       if(a.length) selected.push({provider:"elk",allowed:a,threshold:20}); }
-      if(document.getElementById('thunderCheckbox').checked)  { const a=allowedFilter(thunderSlots);   if(a.length) selected.push({provider:"thunder",allowed:a,threshold:20}); }
-      if(document.getElementById('popiCheckbox').checked)     { const a=allowedFilter(popiSlots);      if(a.length) selected.push({provider:"popi",allowed:a,threshold:20}); }
-      if(document.getElementById('bgamingCheckbox').checked)  { const a=allowedFilter(bgamingSlots);   if(a.length) selected.push({provider:"bgaming",allowed:a,threshold:20}); }
-      if(document.getElementById('printCheckbox').checked)    { const a=allowedFilter(printSlots);     if(a.length) selected.push({provider:"print",allowed:a,threshold:20}); }
-      if(document.getElementById('bullsharkCheckbox').checked){ const a=allowedFilter(bullsharkSlots); if(a.length) selected.push({provider:"bullshark",allowed:a,threshold:20}); }
-      if(document.getElementById('netentCheckbox').checked)   { const a=allowedFilter(netentSlots);    if(a.length) selected.push({provider:"netent",allowed:a,threshold:20}); }
-
+      const filt=a=>a.filter(slot=>{const n=(slot.dataset.name||"").toLowerCase();return !(n.includes('bacarrat')||n.includes('roulette')||n.includes('blackjack'));});
+      if(document.getElementById('pragmaticCheckbox').checked){const a=filt(pragmaticSlots);if(a.length)selected.push({provider:"pragmatic",allowed:a,threshold:30});}
+      if(document.getElementById('hacksawCheckbox').checked){const a=filt(hacksawSlots);if(a.length)selected.push({provider:"hacksaw",allowed:a,threshold:16});}
+      if(document.getElementById('nolimitCheckbox').checked){const a=filt(nolimitSlots);if(a.length)selected.push({provider:"nolimit",allowed:a,threshold:20});}
+      if(document.getElementById('massiveCheckbox').checked){const a=filt(massiveSlots);if(a.length)selected.push({provider:"massive",allowed:a,threshold:20});}
+      if(document.getElementById('twistCheckbox').checked){const a=filt(twistSlots);if(a.length)selected.push({provider:"twist",allowed:a,threshold:20});}
+      if(document.getElementById('pushCheckbox').checked){const a=filt(pushSlots);if(a.length)selected.push({provider:"push",allowed:a,threshold:20});}
+      if(document.getElementById('relaxCheckbox').checked){const a=filt(relaxSlots);if(a.length)selected.push({provider:"relax",allowed:a,threshold:20});}
+      if(document.getElementById('playngoCheckbox').checked){const a=filt(playngoSlots);if(a.length)selected.push({provider:"playngo",allowed:a,threshold:30});}
+      if(document.getElementById('titanCheckbox').checked){const a=filt(titanSlots);if(a.length)selected.push({provider:"titan",allowed:a,threshold:20});}
+      if(document.getElementById('avataruxCheckbox').checked){const a=filt(avataruxSlots);if(a.length)selected.push({provider:"avatarux",allowed:a,threshold:20});}
+      if(document.getElementById('backseatCheckbox').checked){const a=filt(backseatSlots);if(a.length)selected.push({provider:"backseat",allowed:a,threshold:20});}
+      if(document.getElementById('octoplayCheckbox').checked){const a=filt(octoplaySlots);if(a.length)selected.push({provider:"octoplay",allowed:a,threshold:20});}
+      if(document.getElementById('peterCheckbox').checked){const a=filt(peterSlots);if(a.length)selected.push({provider:"peter",allowed:a,threshold:20});}
+      if(document.getElementById('elkCheckbox').checked){const a=filt(elkSlots);if(a.length)selected.push({provider:"elk",allowed:a,threshold:20});}
+      if(document.getElementById('thunderCheckbox').checked){const a=filt(thunderSlots);if(a.length)selected.push({provider:"thunder",allowed:a,threshold:20});}
+      if(document.getElementById('popiCheckbox').checked){const a=filt(popiSlots);if(a.length)selected.push({provider:"popi",allowed:a,threshold:20});}
+      if(document.getElementById('bgamingCheckbox').checked){const a=filt(bgamingSlots);if(a.length)selected.push({provider:"bgaming",allowed:a,threshold:20});}
+      if(document.getElementById('printCheckbox').checked){const a=filt(printSlots);if(a.length)selected.push({provider:"print",allowed:a,threshold:20});}
+      if(document.getElementById('bullsharkCheckbox').checked){const a=filt(bullsharkSlots);if(a.length)selected.push({provider:"bullshark",allowed:a,threshold:20});}
+      if(document.getElementById('netentCheckbox').checked){const a=filt(netentSlots);if(a.length)selected.push({provider:"netent",allowed:a,threshold:20});}
       if(!selected.length) return null;
-      const chosen = (selected.length===1)? selected[0] : selected[Math.floor(Math.random()*selected.length)];
-      return getRandomFromAllowed(chosen.allowed, chosen.threshold);
+      const chosen=(selected.length===1)?selected[0]:selected[Math.floor(Math.random()*selected.length)];
+      return getRandomFromAllowed(chosen.allowed,chosen.threshold);
     }
 
-    document.getElementById('randomButton').addEventListener('click', () => {
-      const chosenSlot = getWeightedRandomSlot();
+    document.getElementById('randomButton').addEventListener('click',()=>{
+      const chosenSlot=getWeightedRandomSlot();
       if(!chosenSlot){ alert('No allowed slots loaded!'); return; }
       const slider=document.getElementById('slider');
-      const sliderSlots=Array.from(slider.children).slice(0, slots.length);
+      const sliderSlots=Array.from(slider.children).slice(0,slots.length);
       const chosenId=chosenSlot.dataset.slotId;
       let finalIndex=sliderSlots.findIndex(el=>el.dataset.slotId===chosenId);
       if(finalIndex===-1) finalIndex=0;
-
       document.getElementById('randomButton').disabled=true;
 
       const sliderContainer=document.getElementById('sliderContainer');
       const containerCenter=sliderContainer.offsetWidth/2;
       const chosenEl=sliderSlots[finalIndex];
       const chosenCenter=chosenEl.offsetLeft+chosenEl.offsetWidth/2;
-      let baseTarget=containerCenter-chosenCenter;
+      const baseTarget=containerCenter-chosenCenter;
 
       const effectiveWidth=chosenEl.offsetWidth+10;
       const cycleWidth=slots.length*effectiveWidth;
       const desiredDistance=7*speed;
-      let extraLoops=Math.floor((desiredDistance-Math.abs(baseTarget))/cycleWidth);
-      if(extraLoops<1) extraLoops=1;
-      const target=baseTarget - extraLoops*cycleWidth;
+      let extraLoops=Math.floor((desiredDistance-Math.abs(baseTarget))/cycleWidth); if(extraLoops<1) extraLoops=1;
+      const target=baseTarget-extraLoops*cycleWidth;
 
       const duration=5;
       slider.style.transition=`transform ${duration}s ease-in-out`;
@@ -440,27 +426,26 @@
 
     function showModal(slot){
       const modal=document.getElementById('modal');
-      const modalSlotImage=document.getElementById('modalSlotImage');
-      const modalSlotName=document.getElementById('modalSlotName');
-      const modalPlayButton=document.getElementById('modalPlayButton');
-      modalSlotImage.src=slot.querySelector('img').src;
+      const img=document.getElementById('modalSlotImage');
+      const nameEl=document.getElementById('modalSlotName');
+      const playBtn=document.getElementById('modalPlayButton');
+      img.src=slot.querySelector('img').src;
 
-      const providerRemovalMap = {
-        pragmatic:/Pragmatic\s*Play/gi, hacksaw:/Hacksaw\s*Gaming/gi, nolimit:/Nolimit\s*City/gi, massive:/Massive\s*Studios/gi,
-        twist:/Twist\s*Gaming/gi, push:/Push\s*Gaming/gi, relax:/Relax\s*Gaming/gi, playngo:/Play'?n\s*Go/gi,
-        titan:/Titan\s*Gaming/gi, avatarux:/Avatar\s*UX(?:\s*Studios)?|AvatarUX(?:\s*Studios)?/gi, backseat:/Backseat\s*Gaming/gi,
-        octoplay:/Octoplay/gi, peter:/Peter\s*&\s*Sons/gi, elk:/ELK\s*Studios/gi, thunder:/Thunderkick/gi,
-        popi:/Popiplay/gi, bgaming:/BGaming/gi, print:/Print\s*Studios/gi, bullshark:/Bullshark\s*Games/gi, netent:/Netent/gi
+      const removal={
+        pragmatic:/Pragmatic\s*Play/gi,hacksaw:/Hacksaw\s*Gaming/gi,nolimit:/Nolimit\s*City/gi,massive:/Massive\s*Studios/gi,twist:/Twist\s*Gaming/gi,
+        push:/Push\s*Gaming/gi,relax:/Relax\s*Gaming/gi,playngo:/Play'?n\s*Go/gi,titan:/Titan\s*Gaming/gi,avatarux:/Avatar\s*UX(?:\s*Studios)?|AvatarUX(?:\s*Studios)?/gi,
+        backseat:/Backseat\s*Gaming/gi,octoplay:/Octoplay/gi,peter:/Peter\s*&\s*Sons/gi,elk:/ELK\s*Studios/gi,thunder:/Thunderkick/gi,
+        popi:/Popiplay/gi,bgaming:/BGaming/gi,print:/Print\s*Studios/gi,bullshark:/Bullshark\s*Games/gi,netent:/Netent/gi
       };
       let displayName=(slot.dataset.name||"").trim();
-      Object.values(providerRemovalMap).forEach(rx=>{ displayName=displayName.replace(rx,"").trim(); });
-      modalSlotName.textContent=displayName;
+      Object.values(removal).forEach(rx=>displayName=displayName.replace(rx,"").trim());
+      nameEl.textContent=displayName;
 
       const originalLink=slot.dataset.link;
       function updatePlayLink(){
         const domainToUse=selectedDomain||"stake.com";
-        const updatedLink=originalLink.replace(/stake\.com/i, domainToUse);
-        modalPlayButton.onclick=()=>{ window.open(updatedLink,'_blank'); hideModal(); };
+        const updatedLink=originalLink.replace(/stake\.com/i,domainToUse);
+        playBtn.onclick=()=>{ window.open(updatedLink,'_blank'); hideModal(); };
       }
       updatePlayLink();
 
@@ -478,39 +463,32 @@
       modal.classList.remove('show');
       setTimeout(()=>{ modal.style.display='none'; document.getElementById('randomButton').disabled=false; reshuffleSlots(); document.getElementById('taskDisplay').textContent=''; },300);
     }
-
     function reshuffleSlots(){ shuffleArray(slots); updateSliderDisplay(); }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadSlots();
-      checkForUpdates();
-    });
+    document.addEventListener('DOMContentLoaded',()=>{ loadSlots(); checkForUpdates(); });
 
     function checkForUpdates(){
       const now=Date.now();
-      const lastUpdateCheck=localStorage.getItem('lastSlotUpdate');
-      const currentVersion=localStorage.getItem('slotVersion');
-      if(!lastUpdateCheck || now-lastUpdateCheck>86400000){
-        fetch('version.txt')
-          .then(r=>r.text())
-          .then(v=>{
-            if(v!==currentVersion){
-              if(confirm('New slots are available! Would you like to reload the page to see them?')){
-                localStorage.setItem('slotVersion', v);
-                localStorage.setItem('lastSlotUpdate', now);
-                location.reload();
-              }
+      const last=localStorage.getItem('lastSlotUpdate');
+      const cur=localStorage.getItem('slotVersion');
+      if(!last||now-last>86400000){
+        fetch('version.txt').then(r=>r.text()).then(v=>{
+          if(v!==cur){
+            if(confirm('New slots are available! Would you like to reload the page to see them?')){
+              localStorage.setItem('slotVersion',v);
+              localStorage.setItem('lastSlotUpdate',now);
+              location.reload();
             }
-            localStorage.setItem('lastSlotUpdate', now);
-          })
-          .catch(()=>{/* ok if version.txt not present */});
+          }
+          localStorage.setItem('lastSlotUpdate',now);
+        }).catch(()=>{});
       }
     }
 
-    document.getElementById('backButton').addEventListener('click', function(e){
+    document.getElementById('backButton').addEventListener('click',function(e){
       e.preventDefault();
-      document.body.style.animation='pageTransitionOut 0.5s ease forwards';
-      setTimeout(()=>{ window.location.href='../index.html'; }, 500);
+      document.body.style.animation='pageTransitionOut .5s ease forwards';
+      setTimeout(()=>{ window.location.href='../index.html'; },500);
     });
   </script>
   <script src="../../cursor_fix.js"></script>
