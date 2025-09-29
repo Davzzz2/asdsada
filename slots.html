@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <title>Slot Assistant</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', Arial, sans-serif;
+      text-align: center;
+      margin: 0; padding: 0;
+      overflow-x: hidden; overflow-y: auto;
+      background: linear-gradient(135deg, hsl(220, 100%, 1%) 0%, hsl(220, 70%, 12%) 50%, hsl(220, 100%, 1%) 100%);
+      background-attachment: fixed; min-height: 100vh; color: white; opacity: 0;
+      animation: pageTransitionIn 0.5s ease-out forwards;
+    }
+    @keyframes pageTransitionIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
+    @keyframes pageTransitionOut { from {opacity:1; transform: translateY(0);} to {opacity:0; transform: translateY(-20px);} }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(circle at 20% 20%, hsla(220,73%,63%,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, hsla(220,73%,63%,0.1) 0%, transparent 50%);
+      pointer-events: none; z-index: 0; background-attachment: fixed;
+    }
+    body::after { display: none; }
+    #backButton { position: fixed; top: 20px; left: 20px; background: transparent; cursor: pointer; border: none; width: 56px; height: 56px; margin: 0; padding: 0; overflow: hidden; outline: none; z-index: 1001; -webkit-tap-highlight-color: transparent; box-shadow: none; }
+    #backButton:focus { outline: none; box-shadow: none; }
+    #backButton::-moz-focus-inner { border: 0; }
+
+    .button { position: relative; background: transparent; cursor: pointer; border: none; width: 56px; height: 56px; padding: 0; margin: 0; overflow: hidden; outline: none; -webkit-tap-highlight-color: transparent; box-shadow: none; }
+    .button:focus { outline: none; box-shadow: none; }
+    .button::-moz-focus-inner { border: 0; }
+    .button:before, .button:after { content: ""; position: absolute; border-radius: 50%; inset: 7px; box-shadow: none; }
+    .button:before { border: 4px solid rgba(240,238,239,0.8); transition: opacity .4s cubic-bezier(.77,0,.175,1) 80ms, transform .5s cubic-bezier(.455,.03,.515,.955) 80ms; }
+    .button:after { border: 4px solid rgba(150,218,240,0.8); transform: scale(1.3); transition: opacity .4s cubic-bezier(.165,.84,.44,1), transform .5s cubic-bezier(.25,.46,.45,.94); opacity: 0; }
+    .button:hover:before, .button:focus:before { opacity: 0; transform: scale(.7); }
+    .button:hover:after, .button:focus:after { opacity: 1; transform: scale(1); }
+    .button-box { display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center; }
+    .button-elem { display: flex; width: 20px; height: 20px; transform: rotate(180deg); fill: #f0eeef; }
+    .button:hover .button-box, .button:focus .button-box { transition: .4s; transform: translateX(-56px); }
+
+    h1 { margin-top: 20px; font-size: 2.5em; letter-spacing: 1px; color: #fff; }
+    .controls-container { position: relative; z-index: 1000; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 15px; margin: 20px 0; }
+    .dropdown { position: relative; display: inline-block; margin: 0; z-index: 1000; }
+    .dropbtn { background: rgba(44,62,80,.8); color: white; padding: 10px 20px; border: 2px solid white; border-radius: 5px; font-size: 18px; cursor: pointer; box-shadow: 0 0 5px white; }
+    .dropdown-content { display: none; position: absolute; background: rgba(44,62,80,.8); min-width: 200px; box-shadow: 0 0 20px white; z-index: 1001; border-radius: 5px; padding: 10px; text-align: left; border: 2px solid white; }
+    .dropdown-content label { display: block; color: #000; font-size: 16px; margin: 5px 0; cursor: pointer; }
+    .dropdown-content input[type="checkbox"] { margin-right: 5px; transform: scale(1.2); vertical-align: middle; }
+
+    button { position: relative; z-index: 5; border: 2px solid white; border-radius: 5px; padding: 10px 20px; font-size: 18px; cursor: pointer; transition: all .3s; background: rgba(44,62,80,.8); color: white; box-shadow: 0 0 5px white; }
+    button:hover { background: white; color: rgba(44,62,80,.8); transform: translateY(-2px); }
+    #randomButton { margin: 0; }
+
+    .modal-content .play-btn, .modal-content .cancel-btn, .modal-content .task-btn { background: rgba(44,62,80,.8); color: white; border: 2px solid white; }
+    .modal-content .play-btn:hover, .modal-content .cancel-btn:hover, .modal-content .task-btn:hover { background: white; color: rgba(44,62,80,.8); }
+
+    #taskDisplay { position: relative; z-index: 6; font-size: 20px; font-weight: bold; margin-top: 10px; color: white; text-shadow: 0 0 5px white; }
+
+    #sliderContainer { position: relative; width: 100vw; height: 350px; overflow: hidden; margin: 20px auto; background: rgba(44,62,80,.8); border: 2px solid white; box-shadow: 0 0 20px white; z-index: 1; }
+    #centerLine { position: absolute; width: 4px; height: 100%; background: white; left: 50%; transform: translateX(-50%); top: 0; z-index: 8; }
+    #slider { display: flex; align-items: center; gap: 10px; padding: 10px; margin: 0; white-space: nowrap; transform: translateX(0); }
+
+    .slot { width: 250px; flex-shrink: 0; transition: transform .3s ease-in-out; cursor: pointer; border: 2px solid white; border-radius: 5px; background: rgba(44,62,80,.8); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px white; }
+    .slot img { width: 100%; height: 100%; border-radius: 5px; object-fit: cover; display: block; transition: transform .3s ease-in-out, box-shadow .3s ease-in-out; image-rendering: auto; }
+    .slot:hover img { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,.1); }
+    .highlight { transform: scale(1.1); border-color: #222; transition: transform .3s ease-in-out; }
+
+    #modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,.6); justify-content: center; align-items: center; z-index: 2000; opacity: 0; transition: opacity .3s ease-in-out; }
+    #modal.show { opacity: 1; }
+    .modal-content { background: rgba(44,62,80,.8); padding: 20px; border-radius: 8px; text-align: center; color: white; width: 600px; max-width: 90%; border: 2px solid white; box-shadow: 0 0 20px white; transform: scale(.9); transition: transform .3s ease-in-out; }
+    #modal.show .modal-content { transform: scale(1); }
+    .modal-content img { max-width: 100%; height: auto; border-radius: 5px; margin-bottom: 10px; border: 2px solid white; }
+
+    #domainSelector {
+      position: relative; z-index: 1002; padding: 5px 17px; font-size: 16px; border-radius: 5px; border: 2px solid white;
+      background: rgba(44,62,80,.8); color: white; appearance: none; -webkit-appearance: none; -moz-appearance: none;
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D'10'%20height%3D'10'%20viewBox%3D'0%200%2010%2010'%20xmlns%3D'http://www.w3.org/2000/svg'%3E%3Cpolygon%20points%3D'0,0%2010,0%205,10'%20fill%3D'%23fff'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; position: relative; top: -15px;
+    }
+
+    @media (max-width: 1200px) { #sliderContainer { width: 90vw; } }
+    @media (max-width: 992px) {
+      h1 { font-size: 2em; } .slot { width: 200px; } .modal-content { width: 80%; }
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8em; } #sliderContainer { height: 300px; } .slot { width: 180px; }
+      .dropdown-content { min-width: 180px; } .modal-content { padding: 15px; }
+      #backButton { top: 10px; left: 10px; width: 45px; height: 45px; }
+      .button-box { transform: scale(0.8); }
+    }
+    @media (max-width: 576px) {
+      body { padding-bottom: 30px; } h1 { font-size: 1.5em; margin-top: 65px; }
+      #backButton { width: 40px; height: 40px; }
+      .dropbtn, #randomButton { font-size: 16px; padding: 8px 16px; }
+      #sliderContainer { height: 220px; margin: 15px auto; } .slot { width: 140px; }
+      .modal-content { padding: 10px; width: 85%; max-height: 80vh; overflow-y: auto; }
+      .modal-content h2 { font-size: 18px; }
+      .modal-content .play-btn, .modal-content .cancel-btn, .modal-content .task-btn { font-size: 14px; padding: 8px 16px; }
+      #taskDisplay { font-size: 16px; }
+      #domainSelector { font-size: 14px; padding: 4px 15px; }
+      .dropdown-content { max-height: 60vh; overflow-y: auto; }
+    }
+    @media (max-width: 400px) {
+      h1 { font-size: 1.3em; } .dropdown-content { min-width: 150px; } .slot { width: 120px; }
+      #backButton { width: 40px; height: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="button" id="backButton">
+    <div class="button-box">
+      <span class="button-elem">
+        <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
+          <path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path>
+        </svg>
+      </span>
+    </div>
+  </button>
+
+  <h1>Slot Assistant</h1>
+
+  <div class="controls-container">
+    <!-- Dropdown with Provider Checkboxes -->
+    <div class="dropdown">
+      <button class="dropbtn" id="providerDropdownBtn">Select Providers</button>
+      <div class="dropdown-content" id="providerDropdownContent">
+        <label><input type="checkbox" id="pragmaticCheckbox" checked> Pragmatic Play</label>
+        <label><input type="checkbox" id="hacksawCheckbox" checked> Hacksaw Gaming</label>
+        <label><input type="checkbox" id="nolimitCheckbox" checked> Nolimit City</label>
+        <label><input type="checkbox" id="massiveCheckbox" checked> Massive Studios</label>
+        <label><input type="checkbox" id="twistCheckbox" checked> Twist Gaming</label>
+        <label><input type="checkbox" id="pushCheckbox" checked> Push Gaming</label>
+        <label><input type="checkbox" id="relaxCheckbox" checked> Relax Gaming</label>
+        <label><input type="checkbox" id="playngoCheckbox" checked> Play'n Go</label>
+        <label><input type="checkbox" id="titanCheckbox" checked> Titan Gaming</label>
+        <label><input type="checkbox" id="avataruxCheckbox" checked> Avatar UX Studios</label>
+        <label><input type="checkbox" id="backseatCheckbox" checked> Backseat Gaming</label>
+        <label><input type="checkbox" id="octoplayCheckbox" checked> Octoplay</label>
+        <label><input type="checkbox" id="peterCheckbox" checked> Peter & Sons</label>
+        <label><input type="checkbox" id="elkCheckbox" checked> ELK Studios</label>
+        <label><input type="checkbox" id="thunderCheckbox" checked> Thunderkick</label>
+        <label><input type="checkbox" id="popiCheckbox" checked> Popiplay</label>
+        <label><input type="checkbox" id="bgamingCheckbox" checked> BGaming</label>
+        <label><input type="checkbox" id="printCheckbox" checked> Print Studios</label>
+        <label><input type="checkbox" id="bullsharkCheckbox" checked> Bullshark Games</label>
+        <label><input type="checkbox" id="netentCheckbox" checked> Netent</label>
+      </div>
+    </div>
+
+    <button id="randomButton">Pick Random Slot</button>
+  </div>
+
+  <div id="sliderContainer">
+    <div id="centerLine"></div>
+    <div id="slider"></div>
+  </div>
+
+  <!-- Modal Popout -->
+  <div id="modal">
+    <div class="modal-content">
+      <img id="modalSlotImage" src="" alt="Slot Image">
+      <h2 id="modalSlotName"></h2>
+      <!-- Domain Selector Dropdown -->
+      <select id="domainSelector"></select>
+      <br>
+      <div class="modal-buttons">
+        <button class="play-btn" id="modalPlayButton">Play Now</button>
+        <button class="cancel-btn" id="modalCancelButton">Cancel</button>
+      </div>
+      <button class="task-btn" id="modalTaskButton">Generate Random Task</button>
+      <p id="taskDisplay"></p>
+    </div>
+  </div>
+
+  <script>
+    /* ---------- unchanged globals (kept for compatibility) ---------- */
+    let pragmaticSlots = [];
+    let hacksawSlots = [];
+    let nolimitSlots = [];
+    let massiveSlots = [];
+    let twistSlots = [];
+    let pushSlots = [];
+    let relaxSlots = [];
+    let playngoSlots = [];
+    let titanSlots = [];
+    let avataruxSlots = [];
+    let backseatSlots = [];
+    let octoplaySlots = [];
+    let peterSlots = [];
+    let elkSlots = [];
+    let thunderSlots = [];
+    let popiSlots = [];
+    let bgamingSlots = [];
+    let printSlots = [];
+    let bullsharkSlots = [];
+    let netentSlots = [];
+    let slots = [];
+  
+    let selectedSlot = null;
+    let currentTranslate = 0;
+    const speed = 2000;
+    let slotIdCounter = 0;
+  
+    const isFileMode = location.protocol === 'file:';
+    let __allParsedElements = null;       // built DOM nodes for each slot
+    let __slotsTextCache = null;          // raw text from slots.txt when using picker
+  
+    const domains = [
+      "stake.com","stake.ac","stake.games","stake.bet","stake.pet",
+      "stake1001.com","stake1002.com","stake1003.com","stake1021.com","stake1022.com",
+      "stake.mba","stake.jp","stake.bz","staketr.com","stake.ceo","stake.krd"
+    ];
+  
+    const domainSelector = document.getElementById('domainSelector');
+    const defaultOption = document.createElement('option');
+    defaultOption.value = ""; defaultOption.textContent = "Select Domain"; defaultOption.selected = true;
+    domainSelector.appendChild(defaultOption);
+    domains.forEach(domain => {
+      const option = document.createElement('option');
+      option.value = domain; option.textContent = domain;
+      domainSelector.appendChild(option);
+    });
+  
+    let selectedDomain = "";
+    domainSelector.addEventListener("change", function() {
+      if (this.value !== "") {
+        selectedDomain = this.value;
+        this.disabled = true;
+        this.value = "";
+      }
+    });
+  
+    document.getElementById("providerDropdownBtn").addEventListener("click", () => {
+      const content = document.getElementById("providerDropdownContent");
+      content.style.display = "block";
+      setTimeout(() => { content.classList.add("show"); }, 10);
+    });
+  
+    document.addEventListener("click", (e) => {
+      const dropdown = document.querySelector(".dropdown");
+      const dropdownContent = document.getElementById("providerDropdownContent");
+      if (!dropdown.contains(e.target)) {
+        dropdownContent.classList.remove("show");
+        setTimeout(() => { dropdownContent.style.display = "none"; }, 300);
+      }
+    });
+  
+    function updateDropdownButtonText() {
+      document.getElementById("providerDropdownBtn").textContent = "Select Providers";
+    }
+  
+    const checkboxIds = [
+      "pragmaticCheckbox","hacksawCheckbox","nolimitCheckbox","massiveCheckbox","twistCheckbox",
+      "pushCheckbox","relaxCheckbox","playngoCheckbox","titanCheckbox","avataruxCheckbox",
+      "backseatCheckbox","octoplayCheckbox","peterCheckbox","elkCheckbox","thunderCheckbox",
+      "popiCheckbox","bgamingCheckbox","printCheckbox","bullsharkCheckbox","netentCheckbox"
+    ];
+    checkboxIds.forEach(id => {
+      document.getElementById(id).addEventListener("change", () => {
+        updateDropdownButtonText();
+        loadSlots();
+      });
+    });
+    updateDropdownButtonText();
+  
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+  
+    function preloadImages(slots) {
+      let promises = [];
+      slots.forEach(slot => {
+        let img = slot.querySelector('img');
+        if (img) {
+          promises.push(new Promise((resolve) => {
+            if (img.complete) resolve(); else { img.onload = resolve; img.onerror = resolve; }
+          }));
+        }
+      });
+      return Promise.all(promises);
+    }
+  
+    function updateSliderDisplay() {
+      const slider = document.getElementById('slider');
+      slider.innerHTML = '';
+  
+      const specialProviders = ["bullshark", "massive", "titan"];
+      let allSpecial = slots.length > 0 && slots.every(slot => specialProviders.includes(slot.dataset.provider));
+      let repeatCount = (slots.length < 2 || allSpecial) ? 10 : 3;
+  
+      for (let i = 0; i < repeatCount; i++) {
+        slots.forEach(slot => {
+          slider.appendChild(i === 0 ? slot : slot.cloneNode(true));
+        });
+      }
+      currentTranslate = 0;
+      slider.style.transition = 'none';
+      slider.style.transform = `translateX(0px)`;
+    }
+  
+    /* ---------- Provider normalization ---------- */
+    function normalizeProviderToKey(label) {
+      if (!label) return "unknown";
+      const s = label.toLowerCase().replace(/[\s._-]+/g, "");
+      if (/^pragmatic(play)?$/.test(s)) return "pragmatic";
+      if (/^hacksaw(gaming)?$/.test(s)) return "hacksaw";
+      if (/^nolimit(city)?$/.test(s)) return "nolimit";
+      if (/^massive(studios?)?$/.test(s)) return "massive";
+      if (/^twist(gaming)?$/.test(s)) return "twist";
+      if (/^push(gaming)?$/.test(s)) return "push";
+      if (/^relax(gaming)?$/.test(s)) return "relax";
+      if (/^playn?go$/.test(s)) return "playngo";
+      if (/^titan(gaming)?$/.test(s)) return "titan";
+      if (/^avatarux(studios)?$/.test(s)) return "avatarux";
+      if (/^backseat(gaming)?$/.test(s)) return "backseat";
+      if (/^octoplay$/.test(s)) return "octoplay";
+      if (/^peter(ands|&s)ons$/.test(s)) return "peter";
+      if (/^elk(studios)?$/.test(s)) return "elk";
+      if (/^thunderkick$/.test(s)) return "thunder";
+      if (/^popiplay$/.test(s)) return "popi";
+      if (/^bgaming$/.test(s)) return "bgaming";
+      if (/^print(studios)?$/.test(s)) return "print";
+      if (/^bullshark(games)?$/.test(s)) return "bullshark";
+      if (/^netent$/.test(s)) return "netent";
+      return "unknown";
+    }
+  
+    /* ---------- Parsing pipeline ---------- */
+    function parseSlotsTextToElements(text) {
+      const lines = String(text).split(/\r?\n/).filter(line => line.trim() !== '');
+      const elems = [];
+      for (const line of lines) {
+        // Accept 3 or 4 columns, prefer 4th Provider if present
+        const m = line.match(/^"([^"]+)","([^"]+)","([^"]+)"(?:,"([^"]*)")?\s*$/);
+        if (!m) continue;
+        const slotName = m[1].trim();
+        const imageUrl = m[2].trim();
+        const slotLink = m[3].trim();
+        const providerLabel = (m[4] || '').trim();
+        const providerKey = normalizeProviderToKey(providerLabel);
+  
+        const div = document.createElement('div');
+        div.className = 'slot';
+        div.dataset.link = slotLink;
+        div.dataset.name = slotName;
+        div.dataset.provider = providerKey;
+        div.dataset.slotId = providerKey + '-' + (slotIdCounter++);
+  
+        const img = document.createElement('img');
+        img.src = imageUrl; img.alt = slotName;
+        div.appendChild(img);
+  
+        elems.push(div);
+      }
+      return elems;
+    }
+  
+    async function ensureParsedOnce() {
+      if (__allParsedElements) return __allParsedElements;
+  
+      if (isFileMode) {
+        // In file://, we only proceed after user loads the file via button
+        if (!__slotsTextCache) throw new Error('slots.txt not loaded yet (file mode)');
+        __allParsedElements = parseSlotsTextToElements(__slotsTextCache);
+        return __allParsedElements;
+      }
+  
+      // Served via http(s): fetch works
+      const res = await fetch('slots.txt', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to fetch slots.txt: HTTP ' + res.status);
+      const text = await res.text();
+      __allParsedElements = parseSlotsTextToElements(text);
+      return __allParsedElements;
+    }
+  
+    // Backward-compatible signature: fetchSlots(url, provider)
+    function fetchSlots(_unusedUrl, providerKey) {
+      return ensureParsedOnce().then(all => {
+        // clone nodes so each load is independent
+        return all
+          .filter(el => el.dataset.provider === providerKey)
+          .map(el => el.cloneNode(true));
+      });
+    }
+  
+    function loadSlots() {
+      const pragmaticChecked = document.getElementById('pragmaticCheckbox').checked;
+      const hacksawChecked   = document.getElementById('hacksawCheckbox').checked;
+      const nolimitChecked   = document.getElementById('nolimitCheckbox').checked;
+      const massiveChecked   = document.getElementById('massiveCheckbox').checked;
+      const twistChecked     = document.getElementById('twistCheckbox').checked;
+      const pushChecked      = document.getElementById('pushCheckbox').checked;
+      const relaxChecked     = document.getElementById('relaxCheckbox').checked;
+      const playngoChecked   = document.getElementById('playngoCheckbox').checked;
+      const titanChecked     = document.getElementById('titanCheckbox').checked;
+      const avataruxChecked  = document.getElementById('avataruxCheckbox').checked;
+      const backseatChecked  = document.getElementById('backseatCheckbox').checked;
+      const octoplayChecked  = document.getElementById('octoplayCheckbox').checked;
+      const peterChecked     = document.getElementById('peterCheckbox').checked;
+      const elkChecked       = document.getElementById('elkCheckbox').checked;
+      const thunderChecked   = document.getElementById('thunderCheckbox').checked;
+      const popiChecked      = document.getElementById('popiCheckbox').checked;
+      const bgamingChecked   = document.getElementById('bgamingCheckbox').checked;
+      const printChecked     = document.getElementById('printCheckbox').checked;
+      const bullsharkChecked = document.getElementById('bullsharkCheckbox').checked;
+      const netentChecked    = document.getElementById('netentCheckbox').checked;
+  
+      // reset arrays
+      pragmaticSlots = []; hacksawSlots = []; nolimitSlots = []; massiveSlots = [];
+      twistSlots = []; pushSlots = []; relaxSlots = []; playngoSlots = [];
+      titanSlots = []; avataruxSlots = []; backseatSlots = []; octoplaySlots = [];
+      peterSlots = []; elkSlots = []; thunderSlots = []; popiSlots = [];
+      bgamingSlots = []; printSlots = []; bullsharkSlots = []; netentSlots = [];
+      slots = [];
+  
+      let promises = [];
+      if (pragmaticChecked) promises.push(fetchSlots(null, 'pragmatic').then(arr => { pragmaticSlots = arr; }));
+      if (hacksawChecked)   promises.push(fetchSlots(null, 'hacksaw').then(arr => { hacksawSlots = arr; }));
+      if (nolimitChecked)   promises.push(fetchSlots(null, 'nolimit').then(arr => { nolimitSlots = arr; }));
+      if (massiveChecked)   promises.push(fetchSlots(null, 'massive').then(arr => { massiveSlots = arr; }));
+      if (twistChecked)     promises.push(fetchSlots(null, 'twist').then(arr => { twistSlots = arr; }));
+      if (pushChecked)      promises.push(fetchSlots(null, 'push').then(arr => { pushSlots = arr; }));
+      if (relaxChecked)     promises.push(fetchSlots(null, 'relax').then(arr => { relaxSlots = arr; }));
+      if (playngoChecked)   promises.push(fetchSlots(null, 'playngo').then(arr => { playngoSlots = arr; }));
+      if (titanChecked)     promises.push(fetchSlots(null, 'titan').then(arr => { titanSlots = arr; }));
+      if (avataruxChecked)  promises.push(fetchSlots(null, 'avatarux').then(arr => { avataruxSlots = arr; }));
+      if (backseatChecked)  promises.push(fetchSlots(null, 'backseat').then(arr => { backseatSlots = arr; }));
+      if (octoplayChecked)  promises.push(fetchSlots(null, 'octoplay').then(arr => { octoplaySlots = arr; }));
+      if (peterChecked)     promises.push(fetchSlots(null, 'peter').then(arr => { peterSlots = arr; }));
+      if (elkChecked)       promises.push(fetchSlots(null, 'elk').then(arr => { elkSlots = arr; }));
+      if (thunderChecked)   promises.push(fetchSlots(null, 'thunder').then(arr => { thunderSlots = arr; }));
+      if (popiChecked)      promises.push(fetchSlots(null, 'popi').then(arr => { popiSlots = arr; }));
+      if (bgamingChecked)   promises.push(fetchSlots(null, 'bgaming').then(arr => { bgamingSlots = arr; }));
+      if (printChecked)     promises.push(fetchSlots(null, 'print').then(arr => { printSlots = arr; }));
+      if (bullsharkChecked) promises.push(fetchSlots(null, 'bullshark').then(arr => { bullsharkSlots = arr; }));
+      if (netentChecked)    promises.push(fetchSlots(null, 'netent').then(arr => { netentSlots = arr; }));
+  
+      Promise.all(promises)
+        .then(() => {
+          if (pragmaticChecked) slots = slots.concat(pragmaticSlots);
+          if (hacksawChecked)   slots = slots.concat(hacksawSlots);
+          if (nolimitChecked)   slots = slots.concat(nolimitSlots);
+          if (massiveChecked)   slots = slots.concat(massiveSlots);
+          if (twistChecked)     slots = slots.concat(twistSlots);
+          if (pushChecked)      slots = slots.concat(pushSlots);
+          if (relaxChecked)     slots = slots.concat(relaxSlots);
+          if (playngoChecked)   slots = slots.concat(playngoSlots);
+          if (titanChecked)     slots = slots.concat(titanSlots);
+          if (avataruxChecked)  slots = slots.concat(avataruxSlots);
+          if (backseatChecked)  slots = slots.concat(backseatSlots);
+          if (octoplayChecked)  slots = slots.concat(octoplaySlots);
+          if (peterChecked)     slots = slots.concat(peterSlots);
+          if (elkChecked)       slots = slots.concat(elkSlots);
+          if (thunderChecked)   slots = slots.concat(thunderSlots);
+          if (popiChecked)      slots = slots.concat(popiSlots);
+          if (bgamingChecked)   slots = slots.concat(bgamingSlots);
+          if (printChecked)     slots = slots.concat(printSlots);
+          if (bullsharkChecked) slots = slots.concat(bullsharkSlots);
+          if (netentChecked)    slots = slots.concat(netentSlots);
+  
+          if (!slots.length) {
+            alert('Please select at least one provider.');
+          }
+  
+          shuffleArray(slots);
+          preloadImages(slots).then(updateSliderDisplay);
+        })
+        .catch(err => console.error("Error loading slots:", err));
+    }
+  
+    function getRandomFromAllowed(allowed, threshold) {
+      if (allowed.length <= threshold) {
+        return allowed[Math.floor(Math.random() * allowed.length)];
+      } else {
+        return (Math.random() < 0.7)
+          ? allowed[Math.floor(Math.random() * threshold)]
+          : allowed[threshold + Math.floor(Math.random() * (allowed.length - threshold))];
+      }
+    }
+  
+    function getWeightedRandomSlot() {
+      const selectedProviders = [];
+      function allowedFilter(arr) {
+        return arr.filter(slot => {
+          let name = (slot.dataset.name || "").toLowerCase();
+          return !(name.includes('bacarrat') || name.includes('roulette') || name.includes('blackjack'));
+        });
+      }
+      if (document.getElementById('pragmaticCheckbox').checked) { const a = allowedFilter(pragmaticSlots); if (a.length) selectedProviders.push({provider:"pragmatic",allowed:a,threshold:30}); }
+      if (document.getElementById('hacksawCheckbox').checked)   { const a = allowedFilter(hacksawSlots);   if (a.length) selectedProviders.push({provider:"hacksaw",allowed:a,threshold:16}); }
+      if (document.getElementById('nolimitCheckbox').checked)   { const a = allowedFilter(nolimitSlots);   if (a.length) selectedProviders.push({provider:"nolimit",allowed:a,threshold:20}); }
+      if (document.getElementById('massiveCheckbox').checked)   { const a = allowedFilter(massiveSlots);   if (a.length) selectedProviders.push({provider:"massive",allowed:a,threshold:20}); }
+      if (document.getElementById('twistCheckbox').checked)     { const a = allowedFilter(twistSlots);     if (a.length) selectedProviders.push({provider:"twist",allowed:a,threshold:20}); }
+      if (document.getElementById('pushCheckbox').checked)      { const a = allowedFilter(pushSlots);      if (a.length) selectedProviders.push({provider:"push",allowed:a,threshold:20}); }
+      if (document.getElementById('relaxCheckbox').checked)     { const a = allowedFilter(relaxSlots);     if (a.length) selectedProviders.push({provider:"relax",allowed:a,threshold:20}); }
+      if (document.getElementById('playngoCheckbox').checked)   { const a = allowedFilter(playngoSlots);   if (a.length) selectedProviders.push({provider:"playngo",allowed:a,threshold:30}); }
+      if (document.getElementById('titanCheckbox').checked)     { const a = allowedFilter(titanSlots);     if (a.length) selectedProviders.push({provider:"titan",allowed:a,threshold:20}); }
+      if (document.getElementById('avataruxCheckbox').checked)  { const a = allowedFilter(avataruxSlots);  if (a.length) selectedProviders.push({provider:"avatarux",allowed:a,threshold:20}); }
+      if (document.getElementById('backseatCheckbox').checked)  { const a = allowedFilter(backseatSlots);  if (a.length) selectedProviders.push({provider:"backseat",allowed:a,threshold:20}); }
+      if (document.getElementById('octoplayCheckbox').checked)  { const a = allowedFilter(octoplaySlots);  if (a.length) selectedProviders.push({provider:"octoplay",allowed:a,threshold:20}); }
+      if (document.getElementById('peterCheckbox').checked)     { const a = allowedFilter(peterSlots);     if (a.length) selectedProviders.push({provider:"peter",allowed:a,threshold:20}); }
+      if (document.getElementById('elkCheckbox').checked)       { const a = allowedFilter(elkSlots);       if (a.length) selectedProviders.push({provider:"elk",allowed:a,threshold:20}); }
+      if (document.getElementById('thunderCheckbox').checked)   { const a = allowedFilter(thunderSlots);   if (a.length) selectedProviders.push({provider:"thunder",allowed:a,threshold:20}); }
+      if (document.getElementById('popiCheckbox').checked)      { const a = allowedFilter(popiSlots);      if (a.length) selectedProviders.push({provider:"popi",allowed:a,threshold:20}); }
+      if (document.getElementById('bgamingCheckbox').checked)   { const a = allowedFilter(bgamingSlots);   if (a.length) selectedProviders.push({provider:"bgaming",allowed:a,threshold:20}); }
+      if (document.getElementById('printCheckbox').checked)     { const a = allowedFilter(printSlots);     if (a.length) selectedProviders.push({provider:"print",allowed:a,threshold:20}); }
+      if (document.getElementById('bullsharkCheckbox').checked) { const a = allowedFilter(bullsharkSlots); if (a.length) selectedProviders.push({provider:"bullshark",allowed:a,threshold:20}); }
+      if (document.getElementById('netentCheckbox').checked)    { const a = allowedFilter(netentSlots);    if (a.length) selectedProviders.push({provider:"netent",allowed:a,threshold:20}); }
+  
+      if (!selectedProviders.length) return null;
+      const chosenProvider = (selectedProviders.length === 1)
+        ? selectedProviders[0]
+        : selectedProviders[Math.floor(Math.random() * selectedProviders.length)];
+      return getRandomFromAllowed(chosenProvider.allowed, chosenProvider.threshold);
+    }
+  
+    document.getElementById('randomButton').addEventListener('click', () => {
+      let chosenSlot = getWeightedRandomSlot();
+      if (!chosenSlot) { alert('No allowed slots loaded!'); return; }
+      const slider = document.getElementById('slider');
+  
+      const sliderSlots = Array.from(slider.children).slice(0, slots.length);
+      let chosenId = chosenSlot.dataset.slotId;
+      let finalIndex = sliderSlots.findIndex(el => el.dataset.slotId === chosenId);
+      if (finalIndex === -1) finalIndex = 0;
+  
+      document.getElementById('randomButton').disabled = true;
+  
+      const sliderContainer = document.getElementById('sliderContainer');
+      const containerCenter = sliderContainer.offsetWidth / 2;
+      const chosenSlotElement = sliderSlots[finalIndex];
+      const chosenSlotCenter = chosenSlotElement.offsetLeft + chosenSlotElement.offsetWidth / 2;
+      let baseTarget = containerCenter - chosenSlotCenter;
+  
+      const effectiveWidth = chosenSlotElement.offsetWidth + 10;
+      let cycleWidth = slots.length * effectiveWidth;
+      let desiredDistance = 7 * speed;
+      let extraLoops = Math.floor((desiredDistance - Math.abs(baseTarget)) / cycleWidth);
+      if (extraLoops < 1) extraLoops = 1;
+      let target = baseTarget - extraLoops * cycleWidth;
+  
+      let duration = 5;
+      slider.style.transition = `transform ${duration}s ease-in-out`;
+      slider.style.transform = `translateX(${target}px)`;
+  
+      setTimeout(() => {
+        slider.style.transition = 'none';
+        slider.style.transform = `translateX(${baseTarget}px)`;
+        currentTranslate = baseTarget;
+        sliderSlots.forEach(el => el.classList.remove('highlight'));
+        let chosenEl = sliderSlots.find(el => el.dataset.slotId === chosenId);
+        if (chosenEl) {
+          chosenEl.classList.add('highlight');
+          selectedSlot = chosenEl;
+        }
+        showModal(selectedSlot);
+      }, duration * 1000);
+    });
+  
+    function showModal(slot) {
+      const modal = document.getElementById('modal');
+      const modalSlotImage = document.getElementById('modalSlotImage');
+      let modalSlotName = document.getElementById('modalSlotName');
+      const modalPlayButton = document.getElementById('modalPlayButton');
+      modalSlotImage.src = slot.querySelector('img').src;
+  
+      const providerRemovalMap = {
+        pragmatic: /Pragmatic\s*Play/gi,
+        hacksaw: /Hacksaw\s*Gaming/gi,
+        nolimit: /Nolimit\s*City/gi,
+        massive: /Massive\s*Studios/gi,
+        twist: /Twist\s*Gaming/gi,
+        push: /Push\s*Gaming/gi,
+        relax: /Relax\s*Gaming/gi,
+        playngo: /Play'?n\s*Go/gi,
+        titan: /Titan\s*Gaming/gi,
+        avatarux: /Avatar\s*UX(?:\s*Studios)?|AvatarUX(?:\s*Studios)?/gi,
+        backseat: /Backseat\s*Gaming/gi,
+        octoplay: /Octoplay/gi,
+        peter: /Peter\s*&\s*Sons/gi,
+        elk: /ELK\s*Studios/gi,
+        thunder: /Thunderkick/gi,
+        popi: /Popiplay/gi,
+        bgaming: /BGaming/gi,
+        print: /Print\s*Studios/gi,
+        bullshark: /Bullshark\s*Games/gi,
+        netent: /Netent/gi
+      };
+      let displayName = slot.dataset.name.trim();
+      Object.values(providerRemovalMap).forEach(regex => {
+        displayName = displayName.replace(regex, "").trim();
+      });
+      modalSlotName.textContent = displayName;
+  
+      let originalLink = slot.dataset.link;
+      function updatePlayLink() {
+        let domainToUse = selectedDomain || "stake.com";
+        let updatedLink = originalLink.replace(/stake\.com/i, domainToUse);
+        modalPlayButton.onclick = () => {
+          window.open(updatedLink, '_blank');
+          hideModal();
+        };
+      }
+      updatePlayLink();
+  
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('show'), 10);
+      document.getElementById('modalCancelButton').onclick = hideModal;
+  
+      document.getElementById('modalTaskButton').onclick = function() {
+        const tasks = ["do 20 spins","do 25 spins","do 30 spins","do 50 spins","do 75 spins","do 100 spins","do 120 spins","do 150 spins","do 200 spins","Buy a Bonus","Buy 2 Bonuses","Buy 3 Bonuses"];
+        const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+        document.getElementById('taskDisplay').textContent = randomTask;
+      };
+    }
+  
+    function hideModal() {
+      const modal = document.getElementById('modal');
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        document.getElementById('randomButton').disabled = false;
+        reshuffleSlots();
+        document.getElementById('taskDisplay').textContent = '';
+      }, 300);
+    }
+  
+    function reshuffleSlots() {
+      shuffleArray(slots);
+      updateSliderDisplay();
+    }
+  
+    /* ---------- file:// loader button (user gesture) ---------- */
+    async function pickSlotsText() {
+      // Prefer modern File System Access API
+      if (window.showOpenFilePicker) {
+        const [handle] = await window.showOpenFilePicker({
+          multiple: false,
+          types: [{ description: 'Text', accept: { 'text/plain': ['.txt'] } }]
+        });
+        const file = await handle.getFile();
+        return await file.text();
+      }
+      // Fallback: hidden input
+      return new Promise((resolve, reject) => {
+        const inp = document.createElement('input');
+        inp.type = 'file';
+        inp.accept = '.txt,text/plain';
+        inp.style.display = 'none';
+        document.body.appendChild(inp);
+        inp.onchange = () => {
+          const file = inp.files && inp.files[0];
+          if (!file) { reject(new Error('No file selected')); return; }
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ''));
+          reader.onerror = reject;
+          reader.readAsText(file);
+          setTimeout(() => inp.remove(), 0);
+        };
+        inp.click();
+      });
+    }
+  
+    function addLoadSlotsButton() {
+      const controls = document.querySelector('.controls-container');
+      const btn = document.createElement('button');
+      btn.id = 'loadSlotsBtn';
+      btn.textContent = 'Load slots.txt';
+      btn.title = 'Choose your local slots.txt';
+      btn.addEventListener('click', async () => {
+        try {
+          const text = await pickSlotsText();       // user gesture: allowed
+          __slotsTextCache = text;                  // cache raw text
+          __allParsedElements = null;               // reset parse
+          await loadSlots();                        // render
+          btn.remove();                             // remove temporary button
+        } catch (e) {
+          console.error('slots: failed to read file', e);
+          alert('Could not read slots.txt');
+        }
+      });
+      controls.appendChild(btn);
+    }
+  
+    /* ---------- version check (skip in file mode) ---------- */
+    function checkForUpdates() {
+      if (isFileMode) return; // avoid fetch/CORS warnings in file://
+      const now = Date.now();
+      const lastUpdateCheck = localStorage.getItem('lastSlotUpdate');
+      const currentVersion = localStorage.getItem('slotVersion');
+      if (!lastUpdateCheck || now - lastUpdateCheck > 86400000) {
+        fetch('version.txt')
+          .then(response => response.text())
+          .then(version => {
+            if (version !== currentVersion) {
+              if (confirm('New slots are available! Would you like to reload the page to see them?')) {
+                localStorage.setItem('slotVersion', version);
+                localStorage.setItem('lastSlotUpdate', now);
+                location.reload();
+              }
+            }
+            localStorage.setItem('lastSlotUpdate', now);
+          })
+          .catch(() => {/* ignore */});
+      }
+    }
+  
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (isFileMode) {
+        // Need a user click to read local file
+        addLoadSlotsButton();
+        // Don’t auto-load here; wait for user to click "Load slots.txt"
+      } else {
+        // Served over http(s): normal flow
+        loadSlots();
+        checkForUpdates();
+      }
+    });
+  
+    document.getElementById('backButton').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.body.style.animation = 'pageTransitionOut 0.5s ease forwards';
+      setTimeout(() => {
+        window.location.href = '../index.html';
+      }, 500);
+    });
+  </script>  
+</body>
+</html>
